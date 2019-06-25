@@ -38,26 +38,20 @@ class BaseWithConverter(Base):
         return dao_list
 
 
-class Image(BaseWithConverter):
-    __tablename__ = "image"
+class Packet(BaseWithConverter):
+    __tablename__ = "packet"
 
     # primary key and foreign keys
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # table attributes
-    image_path = Column(String, nullable=False, unique=True)
-    saved_at = Column(DateTime(timezone=True), nullable=False)
+    packet_number = Column(Integer, nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False)
+    content = Column(String, nullable=False)
 
-class Command(BaseWithConverter):
-    __tablename__ = "command"
+    # relationships
+    message_id = Column(Integer, ForeignKey('message.id'))
 
-    # primary key and foreign keys
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    # table attributes
-    command = Column(String, nullable=False, unique=True)
-    arguments = Column(String)
-    saved_at = Column(DateTime(timezone=True), nullable=False)
 
 class Message(BaseWithConverter):
     __tablename__ = "message"
@@ -66,5 +60,14 @@ class Message(BaseWithConverter):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # table attributes
-    message = Column(String, nullable=False)
-    saved_at = Column(DateTime(timezone=True), nullable=False)
+    message_number = Column(Integer, nullable=False)
+    address = Column(String, nullable=True)
+    time_begin_sending = Column(DateTime(timezone=True), nullable=False)
+    time_done_sending = Column(DateTime(timezone=True))
+    type = Column(String, nullable=False)
+    value = Column(String, nullable=False)
+    done = Column(Boolean, nullable=False)
+    type = Column(String, nullable=False) # TODO: Implement enum to only allow message or command as values
+
+    # relationships
+    packets = relationship("Packet")
