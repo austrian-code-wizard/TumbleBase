@@ -67,7 +67,7 @@ class Message(BaseWithConverter):
     type = Column(String, nullable=False)
     value = Column(String, nullable=False)
     done = Column(Boolean, nullable=False)
-    type = Column(String, nullable=False) # TODO: Implement enum to only allow message or command as values
+    message_type = Column(String, nullable=False) # TODO: Implement enum to only allow message or command as values
 
     # relationships
     packets = relationship("Packet")

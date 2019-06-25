@@ -38,19 +38,18 @@ class BaseClass:
 
 
 @dataclass
-class Image(BaseClass):
+class Packet(BaseClass):
+    # primary key and foreign keys
+    id: int = None
 
-    # attributes
-    image_path: str = None
-    saved_at: datetime = None
+    # table attributes
+    packet_number: int = None
+    timestamp: datetime = None
+    content: str = None
 
-@dataclass
-class Command(BaseClass):
+    # relationships
+    message_id: int = None
 
-    # attributes
-    command: str = None
-    arguments: str = None
-    saved_at: datetime = None
 
 @dataclass
 class Message(BaseClass):
@@ -58,4 +57,20 @@ class Message(BaseClass):
     # attributes
     message: str = None
     saved_at: datetime = None
+
+    # primary key and foreign keys
+    id: int = None
+
+    # table attributes
+    message_number: int = None
+    address: str = None
+    time_begin_sending: datetime = None
+    time_done_sending: datetime = None
+    type: str = None
+    value: str = None
+    done: bool = None
+    message_type: str = None  # TODO: Implement enum to only allow message or command as values
+
+    # relationships
+    packets: Packet = None # TODO: not sure if this is how it works
 
