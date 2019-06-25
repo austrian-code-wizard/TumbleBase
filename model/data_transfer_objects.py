@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from model.enums import MessageType
 
 
 @dataclass
@@ -69,7 +70,7 @@ class Message(BaseClass):
     type: str = None
     value: str = None
     done: bool = None
-    message_type: str = None  # TODO: Implement enum to only allow message or command as values
+    message_type: MessageType = None
 
     # relationships
     packets: Packet = None # TODO: not sure if this is how it works

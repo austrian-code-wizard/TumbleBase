@@ -1,9 +1,10 @@
 import enum
 
-""" 
-class Numerus(enum.Enum):
-    singular = "singular"
-    plural = "plural"
+
+class MessageType(enum.Enum):
+    message = "message"
+    command = "command"
+"""	
 
 
 class Gender(enum.Enum):

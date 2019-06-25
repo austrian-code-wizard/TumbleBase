@@ -1,6 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Table, Integer, String, Enum, DateTime, Boolean, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from model.enums import MessageType
 from sqlalchemy import func
 
 Base = declarative_base()
@@ -67,7 +68,7 @@ class Message(BaseWithConverter):
     type = Column(String, nullable=False)
     value = Column(String, nullable=False)
     done = Column(Boolean, nullable=False)
-    message_type = Column(String, nullable=False) # TODO: Implement enum to only allow message or command as values
+    message_type = Column(Enum(MessageType), nullable=False)
 
     # relationships
     packets = relationship("Packet")
