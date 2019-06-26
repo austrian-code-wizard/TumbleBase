@@ -8,7 +8,7 @@ from logger.logger import LoggerFactory
 from marshmallow import ValidationError
 from model.enums import MessageType
 from functools import wraps
-from twClasses.parser import Parser
+from twClasses.twParser import Parser
 
 
 """

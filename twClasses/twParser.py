@@ -1,4 +1,4 @@
-from twClasses.xbee import XBee
+from twClasses.twFakeBee import XBee
 
 
 class Parser:
