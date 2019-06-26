@@ -8,6 +8,7 @@ from logger.logger import LoggerFactory
 from abc import abstractmethod
 from functools import wraps
 from util.mode import Mode
+from datetime import datetime
 
 
 def execute_in_session(func):
@@ -117,3 +118,30 @@ class TumbleBaseLogic(BusinessLogic):
             return packet_dto
         else:
             return None
+
+    @execute_in_session
+    def get_messages(self, session=None):
+        messages_dao = self.message_repository.get_entities(session)
+        if messages_dao is not None:
+            messages_dto = MessageDto.create_from_dao_list(messages_dao)
+            return messages_dto
+        else:
+            return None
+
+    @execute_in_session
+    def get_packets(self, session=None):
+        packets_dao = self.packet_repository.get_entities(session)
+        if packets_dao is not None:
+            packets_dto = PacketDto.create_from_dao_list(packets_dao)
+            return packets_dto
+        else:
+            return None
+
+    @execute_in_session
+    def set_message_to_done(self, message_id, session=None):
+        message_dao = self.message_repository.get_entity(message_id, session)
+        message_dao.time_done_sending = datetime.utcnow()
+        message_dao.done = True
+        message_id = self.message_repository.save_entity(message_dao, session)
+        return message_id
+

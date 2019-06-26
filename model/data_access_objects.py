@@ -28,7 +28,8 @@ class BaseWithConverter(Base):
     def create_from_dto(cls, dto):
         dao = cls()
         for key in dto.__dataclass_fields__.keys():
-            setattr(dao, key, getattr(dto, key))
+            if not getattr(dto, key) is None:
+                setattr(dao, key, getattr(dto, key))
         return dao
 
     @classmethod
@@ -67,7 +68,7 @@ class Message(BaseWithConverter):
     time_done_sending = Column(DateTime(timezone=True))
     type = Column(String, nullable=False)
     value = Column(String, nullable=False)
-    done = Column(Boolean, nullable=False)
+    done = Column(Boolean, default=False)
     message_type = Column(Enum(MessageType), nullable=False)
 
     # relationships

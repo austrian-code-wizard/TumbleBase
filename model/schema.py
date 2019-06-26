@@ -25,7 +25,7 @@ class PacketSchema(Schema):
 
 class MessageSchema(Schema):
     # primary key and foreign keys
-    id= fields.Int(dump_only=True)
+    id = fields.Int(dump_only=True)
 
     # table attributes
     message_number = fields.Int(allow_none=False, required=True)
@@ -34,7 +34,7 @@ class MessageSchema(Schema):
     time_done_sending = fields.DateTime()
     type = fields.String(allow_none=False, required=True)
     value = fields.String(allow_none=False, required=True)
-    done = fields.Boolean(allow_none=False, required=True)
+    done = fields.Boolean(dump_only=True)
     message_type = EnumField(MessageType, by_value=True, allow_none=False, required=True)
 
     # relationships
