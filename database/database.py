@@ -1,8 +1,8 @@
 from sqlalchemy.orm.session import sessionmaker
-from tumbleWeb.model.data_access_objects import Base
-from tumbleWeb.util.utils import get_config_parser
+from model.data_access_objects import Base
+from util.utils import get_config_parser
 from sqlalchemy import create_engine
-from tumbleWeb.util.mode import Mode
+from util.mode import Mode
 
 Session = sessionmaker(autoflush=True)
 

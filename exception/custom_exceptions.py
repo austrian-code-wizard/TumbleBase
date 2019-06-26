@@ -1,4 +1,4 @@
-class TumbleWebException(Exception):
+class TumbleBaseException(Exception):
     pass
 
 

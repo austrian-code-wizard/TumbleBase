@@ -1,5 +1,7 @@
 from model.data_transfer_objects import Packet, Message
 from marshmallow import Schema, fields, post_load
+from marshmallow_enum import EnumField
+from model.enums import MessageType
 from datetime import datetime
 
 
@@ -33,7 +35,7 @@ class MessageSchema(Schema):
     type = fields.String(allow_none=False, required=True)
     value = fields.String(allow_none=False, required=True)
     done = fields.Boolean(allow_none=False, required=True)
-    # message_type = # TODO: Implement with Enum
+    message_type = EnumField(MessageType, by_value=True, allow_none=False, required=True)
 
     # relationships
     # packets = fields.Nested(PacketSchema, dump_only=True) # TODO: Not sure if necessary
@@ -42,3 +44,4 @@ class MessageSchema(Schema):
     def init_model(self, data):
         data["time_begin_sending"] = datetime.utcnow()
         return Message(**data)
+

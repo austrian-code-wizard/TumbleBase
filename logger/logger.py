@@ -1,5 +1,5 @@
 from logging.handlers import RotatingFileHandler
-from tumbleWeb.util.utils import get_config_parser
+from util.utils import get_config_parser
 import logging
 import os
 

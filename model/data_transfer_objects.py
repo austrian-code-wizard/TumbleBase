@@ -73,5 +73,5 @@ class Message(BaseClass):
     message_type: MessageType = None
 
     # relationships
-    packets: Packet = None # TODO: not sure if this is how it works
+    packets: Packet = None
 

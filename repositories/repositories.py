@@ -1,7 +1,7 @@
-from tumbleWeb.model.data_access_objects import Image, Message, Command
-from tumbleWeb.logger.logger import LoggerFactory
+from model.data_access_objects import Message, Packet
+from logger.logger import LoggerFactory
 from abc import abstractmethod
-from tumbleWeb.util.mode import Mode
+from util.mode import Mode
 from re import findall
 
 
@@ -50,19 +50,7 @@ class Repository:
         if mode == Mode.test:
             logger_name = f"{name}-test-logger"
         logger = LoggerFactory.create_logger(logger_name)
-        return cls(logger)
-
-
-class ImageRepository(Repository):
-    """
-    A repository for Images.
-    """
-
-    def __init__(self, logger):
-        super().__init__(logger, Image)
-
-    def delete_entity(self, entity_id, session):
-        raise NotImplementedError("Not available!")
+        return cls(logger) # Bug?
 
 
 class MessageRepository(Repository):
@@ -74,10 +62,10 @@ class MessageRepository(Repository):
         raise NotImplementedError("Not available!")
 
 
-class CommandRepository(Repository):
+class PacketRepository(Repository):
 
     def __init__(self, logger):
-        super().__init__(logger, Command)
+        super().__init__(logger, Packet)
 
     def delete_entity(self, entity_id, session):
         raise NotImplementedError("Not available!")

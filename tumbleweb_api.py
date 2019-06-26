@@ -1,8 +1,8 @@
 from util.utils import internal_server_error_message, invalid_format_message, endpoint_not_found_message, \
     method_not_allowed_message, could_not_verify_message, invalid_token_message, no_admin_message
-from exception.custom_exceptions import TumbleWebException, InternalServerError
-from model.schema import ImageSchema, MessageSchema, CommandSchema
-from businesslogic.busineslogic import TumbleWebLogic
+from exception.custom_exceptions import TumbleBaseException, InternalServerError
+from model.schema import MessageSchema, PacketSchema
+from businesslogic.busineslogic import TumbleBaseLogic
 from flask import Flask, request, jsonify
 from logger.logger import LoggerFactory
 from marshmallow import ValidationError
@@ -17,10 +17,9 @@ which is connected to a test database and everything runs over the app config.
 
 app = Flask(__name__)
 app.config["TUMBLEWEB_LOGGER"] = LoggerFactory.create_logger("rest-api-logger")
-app.config["TUMBLEWEB_BUSINESS_LOGIC"] = TumbleWebLogic.get_business_logic()
-app.config["TUMBLEWEB_IMAGE_SCHEMA"] = ImageSchema()
+app.config["TUMBLEWEB_BUSINESS_LOGIC"] = TumbleBaseLogic.get_business_logic()
 app.config["TUMBLEWEB_MESSAGE_SCHEMA"] = MessageSchema()
-app.config["TUMBLEWEB_COMMAND_SCHEMA"] = CommandSchema()
+app.config["TUMBLEWEB_PACKET_SCHEMA"] = PacketSchema()
 
 
 @app.errorhandler(404)
@@ -42,7 +41,7 @@ def handle_exception(func):
             return result
         except ValidationError:
             return jsonify({"info": invalid_format_message}), 400
-        except TumbleWebException as e:
+        except TumbleBaseException as e:
             return jsonify({"info": str(e)}), 400
         except InternalServerError as e:
             return jsonify({"info": str(e)}), 500
@@ -63,29 +62,17 @@ def add_message():
     else:
         return jsonify({"info": message_id})
 
-@app.route("/add-and-send-command", methods=["POST"])
-@handle_exception
-def add_and_send_command():
-    command_json = request.get_json()
-    command_to_insert, errors = app.config["TUMBLEWEB_COMMAND_SCHEMA"].load(command_json)
-    command_id = app.config["TUMBLEWEB_BUSINESS_LOGIC"].save_and_send_command(command_to_insert)
-    if command_id is None:
-        return jsonify({"info": f"The command cannot be saved or sent."}), 400
-    else:
-        return jsonify({"info": command_id})
 
-
-@app.route("/add-image", methods=["POST"])
+@app.route("/add-packet", methods=["POST"])
 @handle_exception
-def add_image():
-    image_json = request.get_json()
-    image_to_insert, errors = app.config["TUMBLEWEB_IMAGE_SCHEMA"].load(image_json)
-    #TODO: Validate image data and save as file
-    image_id = app.config["TUMBLEWEB_BUSINESS_LOGIC"].save_image(image_to_insert)
-    if image_id is None:
-        return jsonify({"info": f"The image cannot be saved."}), 400
+def add_packet():
+    packet_json = request.get_json()
+    packet_to_insert, errors = app.config["TUMBLEWEB_PACKET_SCHEMA"].load(packet_json)
+    packet_id = app.config["TUMBLEWEB_BUSINESS_LOGIC"].save_packet(packet_to_insert)
+    if packet_id is None:
+        return jsonify({"info": f"The packet cannot be saved."}), 400
     else:
-        return jsonify({"info": image_id})
+        return jsonify({"info": packet_id})
 
 
 @app.route("/get-message/<int:message_id>", methods=["GET"])
@@ -99,26 +86,14 @@ def get_message(message_id):
         return jsonify(result)
 
 
-@app.route("/get-command/<int:command_id>", methods=["GET"])
+@app.route("/get-packet/<int:message_id>", methods=["GET"])
 @handle_exception
-def get_command(command_id):
-    found_command = app.config["TUMBLEWEB_BUSINESS_LOGIC"].get_command(command_id)
-    if found_command is None:
-        return jsonify({"info": f"The command with the id '{command_id}' does not exist."}), 400
+def get_packet(packet_id):
+    found_packet = app.config["TUMBLEWEB_BUSINESS_LOGIC"].get_packet(packet_id)
+    if found_packet is None:
+        return jsonify({"info": f"The packet with the id '{packet_id}' does not exist."}), 400
     else:
-        result, errors = app.config["TUMBLEWEB_COMMAND_SCHEMA"].dump(found_command)
-        return jsonify(result)
-
-
-@app.route("/get-image/<int:image_id>", methods=["GET"])
-@handle_exception
-def get_image(image_id):
-    found_image = app.config["TUMBLEWEB_BUSINESS_LOGIC"].get_image(image_id)
-    if found_image is None:
-        return jsonify({"info": f"The image with the id '{image_id}' does not exist."}), 400
-    else:
-        #TODO: Load image from file and attach to json
-        result, errors = app.config["TUMBLEWEB_IMAGE_SCHEMA"].dump(found_image)
+        result, errors = app.config["TUMBLEWEB_PACKET_SCHEMA"].dump(found_packet)
         return jsonify(result)
 
 

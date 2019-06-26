@@ -1,5 +1,5 @@
 from configparser import ExtendedInterpolation, ConfigParser
-from tumbleWeb.config import config_path
+from config import config_path
 import os
 
 
