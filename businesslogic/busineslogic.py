@@ -5,6 +5,7 @@ from exception.custom_exceptions import TumbleBaseException, InternalServerError
 from model.data_transfer_objects import Message as MessageDto, Packet as PacketDto
 from database.database import DatabaseConnector
 from logger.logger import LoggerFactory
+from twClasses.twParser import Parser
 from abc import abstractmethod
 from functools import wraps
 from util.mode import Mode
@@ -58,6 +59,7 @@ class TumbleBaseLogic(BusinessLogic):
         self._message_repository = None
         self._packet_repository = None
         self._secret_key = None
+        self._parser = Parser()
 
     @property
     def message_repository(self):
@@ -144,4 +146,5 @@ class TumbleBaseLogic(BusinessLogic):
         message_dao.done = True
         message_id = self.message_repository.save_entity(message_dao, session)
         return message_id
+
 

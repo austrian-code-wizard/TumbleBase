@@ -9,6 +9,7 @@ from marshmallow import ValidationError
 from model.enums import MessageType
 from functools import wraps
 from twClasses.twParser import Parser
+from twClasses.twFakeBee import XBee
 
 
 """
@@ -22,7 +23,38 @@ app.config["TUMBLEBASE_LOGGER"] = LoggerFactory.create_logger("rest-api-logger")
 app.config["TUMBLEBASE_BUSINESS_LOGIC"] = TumbleBaseLogic.get_business_logic()
 app.config["TUMBLEBASE_MESSAGE_SCHEMA"] = MessageSchema()
 app.config["TUMBLEBASE_PACKET_SCHEMA"] = PacketSchema()
-app.config["TUMBLEBASE_PARSER"] = Parser()
+app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"] = XBee()
+app.config["TUMBLEBASE_MESSAGE_PARSER"] = Parser()
+
+
+def process_incoming_message(data):
+    address = data.remote_device.get_64bit_addr()
+    data = data.data
+    message_number = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_number(data)
+    message_value = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_value(data)
+    message_type = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_type(data)
+    message_json = {
+        "address": address,
+        "message_number": message_number,
+        "type": message_type,
+        "value": message_value,
+        "message_type": MessageType.message
+    }
+    message_to_insert = app.config["TUMBLEBASE_MESSAGE_SCHEMA"].load(message_json)
+    message_id = app.config["TUMBLEBASE_BUSINESS_LOGIC"].find_or_save_message(message_to_insert)
+    packet_number = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_packet_number(data)
+    packet_content = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_packet_content(data)
+    packet_json = {
+        "packet_number": packet_number,
+        "content": packet_content,
+        "message_id": message_id
+    }
+    packet_to_insert = app.config["TUMBLEBASE_PACKET_SCHEMA"].load(packet_json)
+    app.config["TUMBLEBASE_BUSINESS_LOGIC"].save_packet(packet_to_insert)
+    message_done = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_done(data)
+
+
+
 
 
 @app.errorhandler(404)
@@ -73,8 +105,11 @@ def sent_command():
     message_json["message_type"] = MessageType.command
     message_to_insert = app.config["TUMBLEBASE_MESSAGE_SCHEMA"].load(message_json)
     message_id = app.config["TUMBLEBASE_BUSINESS_LOGIC"].save_message(message_to_insert)
-    packets = app.config["TUMBLEBASE_PARSER"].send_command(message_json["type"]+message_json["value"])
-    for p in packets:
+    content = message_json["type"]+message_json["value"]
+    sending_packets, saving_packets = app.config["TUMBLEBASE_MESSAGE_PARSER"].prepare_command(content)
+    for p in sending_packets:
+        app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"].write(p)
+    for p in saving_packets:
         p["message_id"] = message_id
         packet_to_insert = app.config["TUMBLEBASE_PACKET_SCHEMA"].load(p)
         app.config["TUMBLEBASE_BUSINESS_LOGIC"].save_packet(packet_to_insert)

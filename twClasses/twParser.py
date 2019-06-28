@@ -10,7 +10,6 @@ class Parser:
 		self._packet_id_bytes = 3
 		self._message_id_count = 0
 		self._packet_id_count = 0
-		self._transceiverDevice = XBee()
 
 	@staticmethod
 	def chunkstring(string: str, length: int) -> iter:
@@ -31,8 +30,9 @@ class Parser:
 		self._packet_id_count += 1
 		return self._packet_id_count
 
-	def send_command(self, command: str) -> list:
+	def prepare_command(self, command: str) -> tuple:
 		sending_packets = []
+		saving_packets = []
 		data_set_id = self._next_message_id()
 		data_set_id_bytes = Parser.int_to_bytes(data_set_id, self._message_id_bytes)
 		content_count = self._packet_size - len(self._start_flag) - len(self._end_flag) - self._message_id_bytes\
@@ -41,10 +41,10 @@ class Parser:
 			packet_id = self._next_packet_id()
 			packet_id_bytes = Parser.int_to_bytes(packet_id, self._packet_id_bytes)
 			ready_packet = self._prepare_for_sending(data_set_id_bytes + packet_id_bytes + packet.encode())
-			self._transceiverDevice.write(ready_packet)
-			sending_packets.append({
+			sending_packets.append(ready_packet)
+			saving_packets.append({
 				"packet_number": packet_id,
 				"content": packet,
 			})
 		self._packet_id_count = 0
-		return sending_packets
+		return sending_packets, saving_packets
