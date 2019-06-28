@@ -147,4 +147,12 @@ class TumbleBaseLogic(BusinessLogic):
         message_id = self.message_repository.save_entity(message_dao, session)
         return message_id
 
+    @execute_in_session
+    def find_unfinished_message(self, address, message_number, type_message):
+        message_dao = self.message_repository.find_unfinished_message(address, message_number, type_message)
+        if message_dao is not None:
+            return message_dao.id
+        else:
+            return None
+
 

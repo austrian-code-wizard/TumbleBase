@@ -10,6 +10,7 @@ from model.enums import MessageType
 from functools import wraps
 from twClasses.twParser import Parser
 from twClasses.twFakeBee import XBee
+from twClasses.twWebConnector import twWebConnector
 
 
 """
@@ -25,36 +26,7 @@ app.config["TUMBLEBASE_MESSAGE_SCHEMA"] = MessageSchema()
 app.config["TUMBLEBASE_PACKET_SCHEMA"] = PacketSchema()
 app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"] = XBee()
 app.config["TUMBLEBASE_MESSAGE_PARSER"] = Parser()
-
-
-def process_incoming_message(data):
-    address = data.remote_device.get_64bit_addr()
-    data = data.data
-    message_number = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_number(data)
-    message_value = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_value(data)
-    message_type = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_type(data)
-    message_json = {
-        "address": address,
-        "message_number": message_number,
-        "type": message_type,
-        "value": message_value,
-        "message_type": MessageType.message
-    }
-    message_to_insert = app.config["TUMBLEBASE_MESSAGE_SCHEMA"].load(message_json)
-    message_id = app.config["TUMBLEBASE_BUSINESS_LOGIC"].find_or_save_message(message_to_insert)
-    packet_number = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_packet_number(data)
-    packet_content = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_packet_content(data)
-    packet_json = {
-        "packet_number": packet_number,
-        "content": packet_content,
-        "message_id": message_id
-    }
-    packet_to_insert = app.config["TUMBLEBASE_PACKET_SCHEMA"].load(packet_json)
-    app.config["TUMBLEBASE_BUSINESS_LOGIC"].save_packet(packet_to_insert)
-    message_done = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_done(data)
-
-
-
+app.config["TUMBLEBASE_TUMBLEWEB_CONNECTOR"] = twWebConnector()
 
 
 @app.errorhandler(404)
@@ -96,6 +68,44 @@ def add_message():
         return jsonify({"info": f"The message cannot be saved."}), 400
     else:
         return jsonify({"info": message_id})
+
+
+@app.route("/process-message", methods=["POST"])
+@handle_exception
+def process_incoming_message():
+    """def process_incoming_message(data):
+    address = data.remote_device.get_64bit_addr()
+    data = data.data"""
+    message_json = request.get_json()
+    address = message_json["address"]
+    data = message_json["data"]
+    message_number = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_number(data)
+    message_value = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_value(data)
+    message_type = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_message_type(data)
+    message_id = app.config["TUMBLEBASE_BUSINESS_LOGIC"].find_unfinished_message(address, message_number, message_type)
+    if message_id is None:
+        message_json = {
+        "address": address,
+        "message_number": message_number,
+        "type": message_type,
+        "value": message_value,
+        "message_type": MessageType.message
+        }
+        message_to_insert = app.config["TUMBLEBASE_MESSAGE_SCHEMA"].load(message_json)
+        message_id = app.config["TUMBLEBASE_BUSINESS_LOGIC"].save_message(message_to_insert)
+    packet_number = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_packet_number(data)
+    packet_json = {
+        "packet_number": packet_number,
+        "content": data,
+        "message_id": message_id
+    }
+    packet_to_insert = app.config["TUMBLEBASE_PACKET_SCHEMA"].load(packet_json)
+    app.config["TUMBLEBASE_BUSINESS_LOGIC"].save_packet(packet_to_insert)
+    if app.config["TUMBLEBASE_MESSAGE_PARSER"].is_end_message(data):
+        full_message = app.config["TUMBLEBASE_BUSINESS_LOGIC"].set_message_to_done(message_id)
+        result = app.config["TUMBLEBASE_MESSAGE_SCHEMA"].dump(full_message)
+        return app.config["TUMBLEBASE_TUMBLEWEB_CONNECTOR"].send(result)
+    return message_id
 
 
 @app.route("/send-command", methods=["POST"])

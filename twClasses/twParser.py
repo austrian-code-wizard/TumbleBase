@@ -19,6 +19,14 @@ class Parser:
 	def int_to_bytes(number: int, length):
 		return number.to_bytes(length=length, byteorder="big")
 
+	@staticmethod
+	def bytes_to_int(number: bytes):
+		total = 0
+		length = len(number)
+		for i in range(0, length):
+			total += number[i] << ((length-1-i)*8)
+		return total
+
 	def _prepare_for_sending(self, packet: bytes) -> bytes:
 		return self._start_flag.encode() + packet + self._end_flag.encode()
 
@@ -29,6 +37,24 @@ class Parser:
 	def _next_packet_id(self) -> int:
 		self._packet_id_count += 1
 		return self._packet_id_count
+
+	def parse_message_number(self, data):
+		return Parser.bytes_to_int(data[1:self._message_id_bytes+1])
+
+	def parse_packet_number(self, data):
+		return Parser.bytes_to_int(data[self._message_id_bytes+1:self._message_id_bytes+self._packet_id_bytes+1])
+
+	def parse_message_value(self, data):
+		return data[self._message_id_bytes+self._packet_id_bytes+1+2:-3].decode()
+
+	def parse_message_type(self, data):
+		return data[self._message_id_bytes+self._packet_id_bytes+1:self._message_id_bytes+self._packet_id_bytes+3].decode()
+
+	def is_end_message(self, data):
+		if (ord(data[-3]) >= 97 and ord(data[-3]) <= 122) or (ord(data[-3]) >= 65 and ord(data[-3]) <= 90) and (ord(data[-2]) >= 49 and ord(data[-3]) <= 57):
+			return True
+		else:
+			return False
 
 	def prepare_command(self, command: str) -> tuple:
 		sending_packets = []

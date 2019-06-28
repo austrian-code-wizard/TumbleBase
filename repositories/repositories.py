@@ -61,13 +61,13 @@ class MessageRepository(Repository):
     def delete_entity(self, entity_id, session):
         raise NotImplementedError("Not available!")
 
-    def get_unfinished_message(self, message_number, address, session):
-        return session.query(self.entity_model).filter(Message.address == address).filter(
-            Message.message_number == message_number).filter(Message.done is True).first()
-
-    def get_message_with_higher_message_number(self, message_number, address, session):
-        return session.query(self.entity_model).filter(Message.address == address).filter(
-            Message.message_number > message_number).filter(Message.done is True).first()
+    def find_unfinished_message(self, address, message_number, type_message, session):
+        if type_message is None:
+            return session.query(self.entity_model).filter(Message.address == address).filter(
+                Message.message_number == message_number).filter(Message.done is True).first()
+        else:
+            return session.query(self.entity_model).filter(Message.address == address).filter(
+                Message.message_number == message_number).filter(Message.type == type_message).filter(Message.done is True).first()
 
 
 class PacketRepository(Repository):
