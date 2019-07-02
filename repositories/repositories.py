@@ -3,6 +3,7 @@ from logger.logger import LoggerFactory
 from abc import abstractmethod
 from util.mode import Mode
 from re import findall
+from model.enums import MessageType
 
 
 class Repository:
@@ -61,13 +62,10 @@ class MessageRepository(Repository):
     def delete_entity(self, entity_id, session):
         raise NotImplementedError("Not available!")
 
-    def find_unfinished_message(self, address, message_number, type_message, session):
-        if type_message is None:
-            return session.query(self.entity_model).filter(Message.address == address).filter(
-                Message.message_number == message_number).filter(Message.done is True).first()
-        else:
-            return session.query(self.entity_model).filter(Message.address == address).filter(
-                Message.message_number == message_number).filter(Message.type == type_message).filter(Message.done is True).first()
+    def find_unfinished_message(self, address, message_number, value_type, session):
+        return session.query(self.entity_model).filter(Message.address == address).filter(
+            Message.message_number == message_number).filter(Message.value_type == value_type).filter(
+            Message.done == False).filter(Message.message_type == MessageType.message).first()
 
 
 class PacketRepository(Repository):
@@ -77,5 +75,8 @@ class PacketRepository(Repository):
 
     def delete_entity(self, entity_id, session):
         raise NotImplementedError("Not available!")
+
+    def get_packets_by_message_id(self, message_id, session):
+        return session.query(self.entity_model).filter(Packet.message_id == message_id).order_by(Packet.message_id).all()
 
 

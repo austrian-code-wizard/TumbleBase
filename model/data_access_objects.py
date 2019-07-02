@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Table, Integer, String, Enum, DateTime, Boolean, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Table, Integer, String, Enum, DateTime, Boolean, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from model.enums import MessageType
@@ -49,7 +49,7 @@ class Packet(BaseWithConverter):
     # table attributes
     packet_number = Column(Integer, nullable=False)
     timestamp = Column(DateTime(timezone=True), nullable=False)
-    content = Column(String, nullable=False)
+    content = Column(LargeBinary(length=256), nullable=False)
 
     # relationships
     message_id = Column(Integer, ForeignKey('message.id'))
@@ -66,8 +66,9 @@ class Message(BaseWithConverter):
     address = Column(String, nullable=True)
     time_begin_sending = Column(DateTime(timezone=True), nullable=False)
     time_done_sending = Column(DateTime(timezone=True))
-    type = Column(String, nullable=False)
-    value = Column(String, nullable=False)
+    value_type = Column(String(length=2), nullable=False)
+    total_packets = Column(Integer, nullable=False)
+    data_type = Column(String(length=1), nullable=False)
     done = Column(Boolean, default=False)
     message_type = Column(Enum(MessageType), nullable=False)
 

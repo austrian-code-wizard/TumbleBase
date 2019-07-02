@@ -46,7 +46,7 @@ class Packet(BaseClass):
     # table attributes
     packet_number: int = None
     timestamp: datetime = None
-    content: str = None
+    content: bytes = None
 
     # relationships
     message_id: int = None
@@ -54,10 +54,6 @@ class Packet(BaseClass):
 
 @dataclass
 class Message(BaseClass):
-
-    # attributes
-    message: str = None
-    saved_at: datetime = None
 
     # primary key and foreign keys
     id: int = None
@@ -67,8 +63,9 @@ class Message(BaseClass):
     address: str = None
     time_begin_sending: datetime = None
     time_done_sending: datetime = None
-    type: str = None
-    value: str = None
+    value_type: str = None
+    data_type: str = None
+    total_packets: int = None
     done: bool = None
     message_type: MessageType = None
 

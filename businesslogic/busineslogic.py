@@ -148,11 +148,29 @@ class TumbleBaseLogic(BusinessLogic):
         return message_id
 
     @execute_in_session
-    def find_unfinished_message(self, address, message_number, type_message):
-        message_dao = self.message_repository.find_unfinished_message(address, message_number, type_message)
+    def find_unfinished_message(self, address, message_number, type_message, session=None):
+        message_dao = self.message_repository.find_unfinished_message(address, message_number, type_message, session)
         if message_dao is not None:
             return message_dao.id
         else:
             return None
+
+    @execute_in_session
+    def message_complete(self, message_id, session=None):
+        message_dao = self.message_repository.get_entity(message_id, session)
+        if len(message_dao.packets) == message_dao.total_packets:
+            return True
+        else:
+            return False
+
+    @execute_in_session
+    def get_packets_by_message_id(self, message_id, session=None):
+        packets_dao = self.packet_repository.get_packets_by_message_id(message_id, session)
+        if packets_dao is not None:
+            packets_dto = PacketDto.create_from_dao_list(packets_dao)
+            return packets_dto
+        else:
+            return None
+
 
 

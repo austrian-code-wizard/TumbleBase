@@ -11,5 +11,5 @@ class twWebConnector:
 
     def send(self, json_data):
         result = requests.post(f"http://{self._host}:{self._port}{self._route}", json=json_data)
-        return result.json()["data"]
+        return result.json()
 
