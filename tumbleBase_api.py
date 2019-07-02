@@ -133,7 +133,7 @@ def sent_command():
     message_to_insert = app.config["TUMBLEBASE_MESSAGE_SCHEMA"].load(saving_message)
     message_id = app.config["TUMBLEBASE_BUSINESS_LOGIC"].save_message(message_to_insert)
     for p in sending_packets:
-        app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"].write(p)
+        app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"].write(p, address)
         packet_json = app.config["TUMBLEBASE_MESSAGE_PARSER"].parse_packet(p)
         packet_json["message_id"] = message_id
         packet_to_insert = app.config["TUMBLEBASE_PACKET_SCHEMA"].load(packet_json)

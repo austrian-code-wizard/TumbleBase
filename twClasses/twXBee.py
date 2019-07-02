@@ -8,6 +8,9 @@ class XBee:
 		self._device = XBeeDevice(path_to_device, baud_rate)
 		self._device.open()
 
+	def __del__(self):
+		self._device.close()
+
 	def write(self, message, address):
 		if len(message) > 256:
 			raise UserWarning("Message to large. Will be truncated")
