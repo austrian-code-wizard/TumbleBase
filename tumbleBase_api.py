@@ -4,12 +4,14 @@ from exception.custom_exceptions import TumbleBaseException, InternalServerError
 from model.schema import MessageSchema, PacketSchema, DataInSchema
 from businesslogic.busineslogic import TumbleBaseLogic
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from logger.logger import LoggerFactory
 from marshmallow import ValidationError
 from model.enums import MessageType
 from functools import wraps
 from twClasses.twParser import Parser
 from twClasses.twXBee import XBee
+from twClasses.twFakeBee import XBee
 from twClasses.twWebConnector import twWebConnector
 
 # TODO: Message format: 4 message, 2 packet id, 2 number of packets, 1 data type, 2 datapoint id, rest is packet data
@@ -21,12 +23,14 @@ which is connected to a test database and everything runs over the app config.
 """
 
 app = Flask(__name__)
+CORS(app)
 app.config["TUMBLEBASE_LOGGER"] = LoggerFactory.create_logger("rest-api-logger")
 app.config["TUMBLEBASE_BUSINESS_LOGIC"] = TumbleBaseLogic.get_business_logic()
 app.config["TUMBLEBASE_MESSAGE_SCHEMA"] = MessageSchema()
 app.config["TUMBLEBASE_PACKET_SCHEMA"] = PacketSchema()
 app.config["TUMBLEBASE_DATAINSCHEMA_SCHEMA"] = DataInSchema()
-app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"] = XBee("/dev/tty.usbserial-1420")
+#app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"] = XBee("/dev/tty.usbserial-1420")
+app.config["TUMBLEBASE_TRANSCEIVER_DEVICE"] = XBee()
 app.config["TUMBLEBASE_MESSAGE_PARSER"] = Parser()
 app.config["TUMBLEBASE_TUMBLEWEB_CONNECTOR"] = twWebConnector()
 

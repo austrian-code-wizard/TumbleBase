@@ -2,8 +2,8 @@ class XBee:
 	def __init__(self):
 		self._callback_method = None
 
-	def write(self, inp):
-		print(inp)
+	def write(self, inp, other):
+		print(str(inp)+str(other))
 
 	def receive(self):
 		return "pass"
